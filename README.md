@@ -23,11 +23,11 @@ git- [x] Install TensorFlow.js and MoveNet dependencies
 - [x] Create basic app layout and routing
 
 ### Phase 2: Video Upload & Playback
-- [ ] Create video upload component with drag-and-drop
-- [ ] Implement video player with controls (play, pause, seek)
-- [ ] Add video file validation (format, size limits)
-- [ ] Create video preview component
-- [ ] Handle video loading states and error handling
+- [x] Create video upload component with drag-and-drop
+- [x] Implement video player with controls (play, pause, seek)
+- [x] Add video file validation (format, size limits)
+- [x] Create video preview component
+- [x] Handle video loading states and error handling
 
 ### Phase 3: MoveNet Integration
 - [ ] Load and initialize MoveNet model

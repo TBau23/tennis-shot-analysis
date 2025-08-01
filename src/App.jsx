@@ -2,6 +2,7 @@ import React from 'react';
 import './App.css';
 import Header from './components/Header.jsx';
 import LoadingSpinner from './components/LoadingSpinner.jsx';
+import VideoAnalysis from './components/VideoAnalysis.jsx';
 import { useTensorFlow } from './hooks/useTensorFlow.js';
 
 function App() {
@@ -46,35 +47,7 @@ function App() {
       <Header />
       <main className="main-content">
         {isInitialized ? (
-          <div className="app-ready">
-            <div className="status-section">
-              <h2>✅ TensorFlow Ready!</h2>
-              <p>MoveNet model loaded successfully. Ready to analyze tennis shots!</p>
-            </div>
-            
-            <div className="features-grid">
-              <div className="feature-card">
-                <div className="feature-icon">🎬</div>
-                <h3>Video Upload</h3>
-                <p>Upload your tennis videos for analysis</p>
-                <span className="phase-badge">Phase 2</span>
-              </div>
-              
-              <div className="feature-card">
-                <div className="feature-icon">🎯</div>
-                <h3>Pose Detection</h3>
-                <p>Real-time joint tracking overlay</p>
-                <span className="phase-badge">Phase 4</span>
-              </div>
-              
-              <div className="feature-card">
-                <div className="feature-icon">🏆</div>
-                <h3>Shot Classification</h3>
-                <p>Identify forehand, backhand, and serve</p>
-                <span className="phase-badge">Phase 5</span>
-              </div>
-            </div>
-          </div>
+          <VideoAnalysis />
         ) : (
           <div className="initialization-error">
             <h2>⚠️ Initialization Failed</h2>
