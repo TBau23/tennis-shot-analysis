@@ -47,13 +47,32 @@ function App() {
       <main className="main-content">
         {isInitialized ? (
           <div className="app-ready">
-            <h2>✅ TensorFlow Ready!</h2>
-            <p>MoveNet model loaded successfully. Ready to analyze tennis shots!</p>
-            {/* Video upload and analysis components will go here in Phase 2 */}
-            <div className="placeholder-content">
-              <p>🎬 Video upload component coming in Phase 2</p>
-              <p>🎯 Pose detection overlay coming in Phase 4</p>
-              <p>🏆 Shot classification coming in Phase 5</p>
+            <div className="status-section">
+              <h2>✅ TensorFlow Ready!</h2>
+              <p>MoveNet model loaded successfully. Ready to analyze tennis shots!</p>
+            </div>
+            
+            <div className="features-grid">
+              <div className="feature-card">
+                <div className="feature-icon">🎬</div>
+                <h3>Video Upload</h3>
+                <p>Upload your tennis videos for analysis</p>
+                <span className="phase-badge">Phase 2</span>
+              </div>
+              
+              <div className="feature-card">
+                <div className="feature-icon">🎯</div>
+                <h3>Pose Detection</h3>
+                <p>Real-time joint tracking overlay</p>
+                <span className="phase-badge">Phase 4</span>
+              </div>
+              
+              <div className="feature-card">
+                <div className="feature-icon">🏆</div>
+                <h3>Shot Classification</h3>
+                <p>Identify forehand, backhand, and serve</p>
+                <span className="phase-badge">Phase 5</span>
+              </div>
             </div>
           </div>
         ) : (

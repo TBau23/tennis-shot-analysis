@@ -17,7 +17,7 @@ A React app that allows users to upload videos of themselves playing tennis. The
 ## Task Breakdown
 
 ### Phase 1: Project Setup & Dependencies
-- [x] Install TensorFlow.js and MoveNet dependencies
+git- [x] Install TensorFlow.js and MoveNet dependencies
 - [x] Set up project structure and component organization
 - [x] Configure build tools for TensorFlow.js integration
 - [x] Create basic app layout and routing
