@@ -1,0 +1,130 @@
+.app {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.main-content {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 2rem 4rem;
+  min-height: calc(100vh - 200px);
+}
+
+.app-ready {
+  text-align: center;
+  padding: 3rem 0;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.app-ready h2 {
+  color: #28a745;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.app-ready p {
+  color: #666;
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.placeholder-content {
+  background: white;
+  border-radius: 12px;
+  padding: 3rem;
+  margin-top: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.placeholder-content p {
+  margin: 0.8rem 0;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.error-container {
+  text-align: center;
+  padding: 3rem 0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.error-container h2 {
+  color: #dc3545;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.error-container p {
+  color: #666;
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.retry-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.retry-button:hover {
+  transform: translateY(-2px);
+}
+
+.initialization-error {
+  text-align: center;
+  padding: 3rem 0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.initialization-error h2 {
+  color: #ffc107;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.initialization-error p {
+  color: #666;
+  font-size: 1.2rem;
+}
+
+@media (max-width: 1200px) {
+  .main-content {
+    padding: 2rem 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem 2rem;
+  }
+  
+  .app-ready h2,
+  .error-container h2,
+  .initialization-error h2 {
+    font-size: 2rem;
+  }
+  
+  .placeholder-content {
+    padding: 2rem;
+    margin: 1rem;
+  }
+  
+  .app-ready p,
+  .error-container p,
+  .initialization-error p {
+    font-size: 1.1rem;
+  }
+}
