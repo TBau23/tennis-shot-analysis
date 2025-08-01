@@ -16,6 +16,7 @@ function VideoAnalysis() {
     analysisState,
     analysisProgress,
     poseData,
+    shotData,
     analysisStats,
     hasAnalysisData,
     resetAnalysis
@@ -68,6 +69,23 @@ function VideoAnalysis() {
     }
   };
 
+  // Calculate shot statistics
+  const getShotStats = () => {
+    if (!shotData || shotData.length === 0) return null;
+
+    const stats = {
+      total: shotData.length,
+      forehand: shotData.filter(shot => shot.type === 'forehand').length,
+      backhand: shotData.filter(shot => shot.type === 'backhand').length,
+      serve: shotData.filter(shot => shot.type === 'serve').length,
+      averageConfidence: shotData.reduce((sum, shot) => sum + shot.confidence, 0) / shotData.length
+    };
+
+    return stats;
+  };
+
+  const shotStats = getShotStats();
+
   return (
     <div className="video-analysis-container">
       <div className="analysis-header">
@@ -99,6 +117,7 @@ function VideoAnalysis() {
               <AnalyzedVideoPlayer 
                 videoUrl={videoUrl}
                 poseData={poseData}
+                shotData={shotData}
                 onTimeUpdate={handleVideoTimeUpdate}
                 onVideoEnd={handleVideoEnd}
               />
@@ -123,24 +142,73 @@ function VideoAnalysis() {
                 </div>
                 <span className="progress-text">{analysisProgress.toFixed(1)}%</span>
               </div>
-              <p>Processing video frames for pose detection...</p>
+              <p>Processing video frames for pose detection and shot classification...</p>
             </div>
           )}
 
           {hasAnalysisData && (
-            <PoseStats 
-              detectionStats={analysisStats}
-              isDetecting={false}
-            />
+            <div className="analysis-results">
+              <PoseStats 
+                detectionStats={analysisStats}
+                isDetecting={false}
+              />
+              
+              {shotStats && (
+                <div className="shot-stats">
+                  <h3>🎾 Shot Analysis Results</h3>
+                  <div className="shot-stats-grid">
+                    <div className="stat-item">
+                      <div className="stat-number">{shotStats.total}</div>
+                      <div className="stat-label">Total Shots</div>
+                    </div>
+                    <div className="stat-item">
+                      <div className="stat-number">{shotStats.forehand}</div>
+                      <div className="stat-label">Forehands</div>
+                    </div>
+                    <div className="stat-item">
+                      <div className="stat-number">{shotStats.backhand}</div>
+                      <div className="stat-label">Backhands</div>
+                    </div>
+                    <div className="stat-item">
+                      <div className="stat-number">{shotStats.serve}</div>
+                      <div className="stat-label">Serves</div>
+                    </div>
+                    <div className="stat-item">
+                      <div className="stat-number">{(shotStats.averageConfidence * 100).toFixed(0)}%</div>
+                      <div className="stat-label">Avg Confidence</div>
+                    </div>
+                  </div>
+                  
+                  {shotData.length > 0 && (
+                    <div className="shot-timeline">
+                      <h4>Shot Timeline:</h4>
+                      <div className="timeline-container">
+                        {shotData.map((shot, index) => (
+                          <div key={index} className="timeline-shot">
+                            <span className="shot-type">{shot.type.toUpperCase()}</span>
+                            <span className="shot-time">
+                              {Math.floor(shot.startTime)}s - {Math.floor(shot.endTime)}s
+                            </span>
+                            <span className="shot-confidence">
+                              {(shot.confidence * 100).toFixed(0)}%
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
           <div className="analysis-controls">
             <div className="analysis-status">
               <h3>Analysis Status</h3>
               <p>
-                {analysisState === 'idle' && 'Ready to analyze video frames for pose detection.'}
+                {analysisState === 'idle' && 'Ready to analyze video frames for pose detection and shot classification.'}
                 {analysisState === 'analyzing' && 'Currently analyzing video frames...'}
-                {analysisState === 'complete' && '✅ Analysis complete! Pose data is ready for playback.'}
+                {analysisState === 'complete' && '✅ Analysis complete! Pose data and shot classification ready for playback.'}
                 {analysisState === 'error' && '❌ Analysis failed. Please try again.'}
               </p>
             </div>
@@ -179,13 +247,13 @@ function VideoAnalysis() {
           </div>
           <div className="info-item">
             <div className="info-icon">🎯</div>
-            <h4>Preprocess Analysis</h4>
-            <p>AI analyzes the entire video once to detect all poses</p>
+            <h4>AI Analysis</h4>
+            <p>AI analyzes the entire video for poses and shot classification</p>
           </div>
           <div className="info-item">
             <div className="info-icon">🏆</div>
-            <h4>Smooth Playback</h4>
-            <p>Watch your video with real-time skeleton overlay</p>
+            <h4>Smart Playback</h4>
+            <p>Watch with skeleton overlay and real-time shot indicators</p>
           </div>
         </div>
       </div>

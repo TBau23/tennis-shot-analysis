@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import ShotIndicator from './ShotIndicator.jsx';
 import './AnalyzedVideoPlayer.css';
 
-function AnalyzedVideoPlayer({ videoUrl, poseData, onTimeUpdate, onVideoEnd }) {
+function AnalyzedVideoPlayer({ videoUrl, poseData, shotData, onTimeUpdate, onVideoEnd }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [showControls, setShowControls] = useState(true);
+  const [currentShot, setCurrentShot] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const controlsTimeoutRef = useRef(null);
@@ -25,6 +27,9 @@ function AnalyzedVideoPlayer({ videoUrl, poseData, onTimeUpdate, onVideoEnd }) {
       
       // Draw pose overlay for current time
       drawPoseOverlay(video.currentTime);
+      
+      // Update current shot
+      updateCurrentShot(video.currentTime);
     };
 
     const handleEnded = () => {
@@ -42,6 +47,20 @@ function AnalyzedVideoPlayer({ videoUrl, poseData, onTimeUpdate, onVideoEnd }) {
       video.removeEventListener('ended', handleEnded);
     };
   }, [onTimeUpdate, onVideoEnd]);
+
+  const updateCurrentShot = useCallback((time) => {
+    if (!shotData || shotData.length === 0) {
+      setCurrentShot(null);
+      return;
+    }
+
+    // Find shot that contains the current time
+    const shot = shotData.find(shot => 
+      time >= shot.startTime && time <= shot.endTime
+    );
+
+    setCurrentShot(shot || null);
+  }, [shotData]);
 
   const getInterpolatedPose = useCallback((time) => {
     if (!poseData.length) return null;
@@ -62,16 +81,32 @@ function AnalyzedVideoPlayer({ videoUrl, poseData, onTimeUpdate, onVideoEnd }) {
     // If we have both poses, interpolate between them
     if (beforePose && afterPose) {
       const timeDiff = afterPose.time - beforePose.time;
-      const interpolationFactor = (time - beforePose.time) / timeDiff;
+      const rawInterpolationFactor = (time - beforePose.time) / timeDiff;
       
-      // Interpolate keypoints
+      // Apply easing function for smoother interpolation
+      const interpolationFactor = easeInOutQuart(rawInterpolationFactor);
+      
+      // Interpolate keypoints with velocity-based smoothing
       const interpolatedKeypoints = beforePose.pose.keypoints.map((beforeKp, index) => {
         const afterKp = afterPose.pose.keypoints[index];
         if (!afterKp) return beforeKp;
         
+        // Calculate velocity for this keypoint
+        const velocityX = (afterKp.x - beforeKp.x) / timeDiff;
+        const velocityY = (afterKp.y - beforeKp.y) / timeDiff;
+        
+        // Apply velocity-based prediction for smoother movement
+        const predictedX = beforeKp.x + velocityX * (time - beforePose.time);
+        const predictedY = beforeKp.y + velocityY * (time - beforePose.time);
+        
+        // Blend between linear interpolation and velocity prediction
+        const blendFactor = 0.7; // 70% velocity prediction, 30% linear interpolation
+        const linearX = beforeKp.x + (afterKp.x - beforeKp.x) * interpolationFactor;
+        const linearY = beforeKp.y + (afterKp.y - beforeKp.y) * interpolationFactor;
+        
         return {
-          x: beforeKp.x + (afterKp.x - beforeKp.x) * interpolationFactor,
-          y: beforeKp.y + (afterKp.y - beforeKp.y) * interpolationFactor,
+          x: predictedX * blendFactor + linearX * (1 - blendFactor),
+          y: predictedY * blendFactor + linearY * (1 - blendFactor),
           score: beforeKp.score + (afterKp.score - beforeKp.score) * interpolationFactor,
           name: beforeKp.name
         };
@@ -88,6 +123,11 @@ function AnalyzedVideoPlayer({ videoUrl, poseData, onTimeUpdate, onVideoEnd }) {
     return beforePose || afterPose;
   }, [poseData]);
 
+  // Easing function for smoother interpolation
+  const easeInOutQuart = (t) => {
+    return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+  };
+
   const drawPoseOverlay = useCallback((time) => {
     if (!canvasRef.current || !poseData.length) return;
 
@@ -102,19 +142,11 @@ function AnalyzedVideoPlayer({ videoUrl, poseData, onTimeUpdate, onVideoEnd }) {
 
     if (!currentPose || !currentPose.pose.keypoints) return;
 
-    console.log('Drawing interpolated pose at time:', time, 'confidence:', currentPose.confidence);
+    // Enable anti-aliasing for smoother lines
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
-    // Draw keypoints
-    currentPose.pose.keypoints.forEach((keypoint, index) => {
-      if (keypoint.score > 0.3) {
-        ctx.beginPath();
-        ctx.arc(keypoint.x, keypoint.y, 4, 0, 2 * Math.PI);
-        ctx.fillStyle = '#00ff00';
-        ctx.fill();
-      }
-    });
-
-    // Draw skeleton connections
+    // Draw skeleton connections first (behind keypoints)
     const connections = [
       [5, 6],   // shoulders
       [5, 7],   // left shoulder to left elbow
@@ -130,17 +162,64 @@ function AnalyzedVideoPlayer({ videoUrl, poseData, onTimeUpdate, onVideoEnd }) {
       [14, 16]  // right knee to right ankle
     ];
 
+    // Draw connections with enhanced gradient and glow effect
     connections.forEach(([start, end]) => {
       const startPoint = currentPose.pose.keypoints[start];
       const endPoint = currentPose.pose.keypoints[end];
       
       if (startPoint?.score > 0.3 && endPoint?.score > 0.3) {
+        // Create gradient for smoother lines
+        const gradient = ctx.createLinearGradient(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
+        gradient.addColorStop(0, 'rgba(0, 255, 136, 0.8)');
+        gradient.addColorStop(0.5, 'rgba(0, 255, 136, 1)');
+        gradient.addColorStop(1, 'rgba(0, 255, 136, 0.8)');
+        
+        // Draw outer glow effect
         ctx.beginPath();
         ctx.moveTo(startPoint.x, startPoint.y);
         ctx.lineTo(endPoint.x, endPoint.y);
-        ctx.strokeStyle = '#ff0000';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = 8;
+        ctx.lineCap = 'round';
         ctx.stroke();
+        
+        // Draw main line with gradient
+        ctx.beginPath();
+        ctx.moveTo(startPoint.x, startPoint.y);
+        ctx.lineTo(endPoint.x, endPoint.y);
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      }
+    });
+
+    // Draw keypoints with enhanced styling
+    currentPose.pose.keypoints.forEach((keypoint, index) => {
+      if (keypoint.score > 0.3) {
+        // Create radial gradient for keypoints
+        const gradient = ctx.createRadialGradient(keypoint.x, keypoint.y, 0, keypoint.x, keypoint.y, 8);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        gradient.addColorStop(0.3, 'rgba(0, 255, 136, 1)');
+        gradient.addColorStop(1, 'rgba(0, 255, 136, 0.3)');
+        
+        // Draw outer glow
+        ctx.beginPath();
+        ctx.arc(keypoint.x, keypoint.y, 10, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.fill();
+        
+        // Draw main keypoint with gradient
+        ctx.beginPath();
+        ctx.arc(keypoint.x, keypoint.y, 6, 0, 2 * Math.PI);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        
+        // Draw inner highlight
+        ctx.beginPath();
+        ctx.arc(keypoint.x, keypoint.y, 2, 0, 2 * Math.PI);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
       }
     });
   }, [poseData, getInterpolatedPose]);
@@ -265,6 +344,12 @@ function AnalyzedVideoPlayer({ videoUrl, poseData, onTimeUpdate, onVideoEnd }) {
             <span className="indicator-text">Pose Overlay Active</span>
           </div>
         )}
+        
+        {/* Shot Indicator */}
+        <ShotIndicator 
+          currentShot={currentShot}
+          isVisible={currentShot !== null}
+        />
       </div>
       
       <div className={`video-controls ${showControls ? 'visible' : ''}`}>

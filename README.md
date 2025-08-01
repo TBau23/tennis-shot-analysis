@@ -7,6 +7,8 @@ A React app that allows users to upload videos of themselves playing tennis. The
 - MoveNet joint detection overlay
 - Tennis shot classification (backhand, forehand, serve)
 - Real-time pose tracking
+- Shot analysis and statistics
+- Smooth skeleton visualization
 
 ## Tech Stack
 - React 19
@@ -17,7 +19,7 @@ A React app that allows users to upload videos of themselves playing tennis. The
 ## Task Breakdown
 
 ### Phase 1: Project Setup & Dependencies
-git- [x] Install TensorFlow.js and MoveNet dependencies
+- [x] Install TensorFlow.js and MoveNet dependencies
 - [x] Set up project structure and component organization
 - [x] Configure build tools for TensorFlow.js integration
 - [x] Create basic app layout and routing
@@ -37,18 +39,18 @@ git- [x] Install TensorFlow.js and MoveNet dependencies
 - [x] Optimize performance for real-time processing
 
 ### Phase 4: Joint Overlay Visualization
-- [ ] Create canvas overlay component for pose drawing
-- [ ] Implement joint point rendering (circles/dots)
-- [ ] Add skeleton line connections between joints
-- [ ] Create smooth pose tracking animation
-- [ ] Add pose confidence indicators
+- [x] Create canvas overlay component for pose drawing
+- [x] Implement joint point rendering (circles/dots)
+- [x] Add skeleton line connections between joints
+- [x] Create smooth pose tracking animation
+- [x] Add pose confidence indicators
 
 ### Phase 5: Shot Classification
-- [ ] Design shot classification algorithm
-- [ ] Create training data structure for shot types
-- [ ] Implement shot detection logic (motion analysis)
-- [ ] Add shot type indicators and labels
-- [ ] Create shot classification confidence scoring
+- [x] Design shot classification algorithm
+- [x] Create training data structure for shot types
+- [x] Implement shot detection logic (motion analysis)
+- [x] Add shot type indicators and labels
+- [x] Create shot classification confidence scoring
 
 ### Phase 6: UI/UX Enhancement
 - [ ] Design modern, responsive UI
@@ -81,4 +83,6 @@ npm run dev
 ## Development Notes
 - MoveNet model will be loaded from TensorFlow.js model hub
 - Video processing will be done client-side for privacy
-- Shot classification will use pose data patterns and motion analysis
+- Shot classification uses pose data patterns and motion analysis
+- Analysis samples every 0.1 seconds for smooth tracking
+- Shot detection uses rule-based classification with confidence scoring
