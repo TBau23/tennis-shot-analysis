@@ -1,19 +1,31 @@
 import React, { useState } from 'react';
 import VideoUpload from './VideoUpload.jsx';
 import VideoPlayer from './VideoPlayer.jsx';
+import AnalyzedVideoPlayer from './AnalyzedVideoPlayer.jsx';
+import PoseStats from './PoseStats.jsx';
+import { useVideoAnalysis } from '../hooks/useVideoAnalysis.js';
 import './VideoAnalysis.css';
 
 function VideoAnalysis() {
   const [videoFile, setVideoFile] = useState(null);
   const [videoUrl, setVideoUrl] = useState(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  
+  const {
+    analyzeVideo,
+    analysisState,
+    analysisProgress,
+    poseData,
+    analysisStats,
+    hasAnalysisData,
+    resetAnalysis
+  } = useVideoAnalysis();
 
   const handleVideoSelect = (file, url) => {
     setVideoFile(file);
     setVideoUrl(url);
-    setIsAnalyzing(false);
-    setAnalysisProgress(0);
+    setShowAnalysis(false);
+    resetAnalysis();
   };
 
   const handleVideoTimeUpdate = (currentTime) => {
@@ -31,8 +43,29 @@ function VideoAnalysis() {
     }
     setVideoFile(null);
     setVideoUrl(null);
-    setIsAnalyzing(false);
-    setAnalysisProgress(0);
+    setShowAnalysis(false);
+    resetAnalysis();
+  };
+
+  const handleStartAnalysis = async () => {
+    if (!videoUrl) return;
+    
+    // Create a temporary video element for analysis
+    const videoElement = document.createElement('video');
+    videoElement.src = videoUrl;
+    videoElement.crossOrigin = 'anonymous';
+    
+    // Wait for video to load
+    await new Promise((resolve) => {
+      videoElement.addEventListener('loadedmetadata', resolve);
+      videoElement.load();
+    });
+    
+    // Start analysis
+    const success = await analyzeVideo(videoElement);
+    if (success) {
+      setShowAnalysis(true);
+    }
   };
 
   return (
@@ -62,38 +95,74 @@ function VideoAnalysis() {
           </div>
 
           <div className="video-player-wrapper">
-            <VideoPlayer 
-              videoUrl={videoUrl}
-              onTimeUpdate={handleVideoTimeUpdate}
-              onVideoEnd={handleVideoEnd}
-            />
+            {hasAnalysisData ? (
+              <AnalyzedVideoPlayer 
+                videoUrl={videoUrl}
+                poseData={poseData}
+                onTimeUpdate={handleVideoTimeUpdate}
+                onVideoEnd={handleVideoEnd}
+              />
+            ) : (
+              <VideoPlayer 
+                videoUrl={videoUrl}
+                onTimeUpdate={handleVideoTimeUpdate}
+                onVideoEnd={handleVideoEnd}
+              />
+            )}
           </div>
+
+          {analysisState === 'analyzing' && (
+            <div className="analysis-progress">
+              <h3>🎯 Analyzing Video...</h3>
+              <div className="progress-container">
+                <div className="progress-bar">
+                  <div 
+                    className="progress-fill"
+                    style={{ width: `${analysisProgress}%` }}
+                  />
+                </div>
+                <span className="progress-text">{analysisProgress.toFixed(1)}%</span>
+              </div>
+              <p>Processing video frames for pose detection...</p>
+            </div>
+          )}
+
+          {hasAnalysisData && (
+            <PoseStats 
+              detectionStats={analysisStats}
+              isDetecting={false}
+            />
+          )}
 
           <div className="analysis-controls">
             <div className="analysis-status">
               <h3>Analysis Status</h3>
-              <p>Ready to analyze video frames for pose detection</p>
+              <p>
+                {analysisState === 'idle' && 'Ready to analyze video frames for pose detection.'}
+                {analysisState === 'analyzing' && 'Currently analyzing video frames...'}
+                {analysisState === 'complete' && '✅ Analysis complete! Pose data is ready for playback.'}
+                {analysisState === 'error' && '❌ Analysis failed. Please try again.'}
+              </p>
             </div>
             
             <div className="analysis-actions">
-              <button 
-                className="analyze-button"
-                onClick={() => setIsAnalyzing(true)}
-                disabled={isAnalyzing}
-              >
-                {isAnalyzing ? '⏳ Analyzing...' : '🎯 Start Analysis'}
-              </button>
+              {!hasAnalysisData && analysisState === 'idle' && (
+                <button 
+                  className="analyze-button"
+                  onClick={handleStartAnalysis}
+                  disabled={analysisState === 'analyzing'}
+                >
+                  🎯 Start Video Analysis
+                </button>
+              )}
               
-              {isAnalyzing && (
-                <div className="progress-container">
-                  <div className="progress-bar">
-                    <div 
-                      className="progress-fill"
-                      style={{ width: `${analysisProgress}%` }}
-                    />
-                  </div>
-                  <span className="progress-text">{analysisProgress}%</span>
-                </div>
+              {hasAnalysisData && (
+                <button 
+                  className="analyze-button"
+                  onClick={() => setShowAnalysis(!showAnalysis)}
+                >
+                  {showAnalysis ? '📹 Hide Analysis' : '🎯 Show Analysis'}
+                </button>
               )}
             </div>
           </div>
@@ -110,13 +179,13 @@ function VideoAnalysis() {
           </div>
           <div className="info-item">
             <div className="info-icon">🎯</div>
-            <h4>Pose Detection</h4>
-            <p>MoveNet analyzes each frame to detect body keypoints</p>
+            <h4>Preprocess Analysis</h4>
+            <p>AI analyzes the entire video once to detect all poses</p>
           </div>
           <div className="info-item">
             <div className="info-icon">🏆</div>
-            <h4>Shot Classification</h4>
-            <p>AI classifies your shots as forehand, backhand, or serve</p>
+            <h4>Smooth Playback</h4>
+            <p>Watch your video with real-time skeleton overlay</p>
           </div>
         </div>
       </div>

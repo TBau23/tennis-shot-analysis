@@ -1,4 +1,4 @@
-.video-player-container {
+.analyzed-video-player-container {
   position: relative;
   width: 100%;
   max-width: 800px;
@@ -20,6 +20,56 @@
   height: auto;
   display: block;
   cursor: pointer;
+}
+
+.pose-canvas {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+.pose-indicator {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  z-index: 20;
+  backdrop-filter: blur(10px);
+}
+
+.indicator-dot {
+  width: 8px;
+  height: 8px;
+  background: #00ff00;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.indicator-text {
+  white-space: nowrap;
 }
 
 .video-controls {
@@ -89,43 +139,6 @@
   transform: scale(1.1);
 }
 
-.pose-button {
-  font-size: 1.2rem;
-  position: relative;
-}
-
-.pose-button.active {
-  background: rgba(0, 255, 0, 0.3);
-  color: #00ff00;
-}
-
-.pose-button.active::after {
-  content: '';
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 8px;
-  height: 8px;
-  background: #00ff00;
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(1.2);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
 .time-display {
   color: white;
   font-size: 0.9rem;
@@ -137,7 +150,6 @@
 .controls-right {
   display: flex;
   align-items: center;
-  gap: 1rem;
 }
 
 .volume-control {
@@ -181,7 +193,7 @@
 }
 
 @media (max-width: 768px) {
-  .video-player-container {
+  .analyzed-video-player-container {
     max-width: 100%;
     border-radius: 8px;
   }
@@ -194,10 +206,6 @@
     font-size: 1.2rem;
   }
   
-  .pose-button {
-    font-size: 1rem;
-  }
-  
   .time-display {
     font-size: 0.8rem;
   }
@@ -206,7 +214,10 @@
     width: 60px;
   }
   
-  .controls-right {
-    gap: 0.5rem;
+  .pose-indicator {
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
   }
 } 

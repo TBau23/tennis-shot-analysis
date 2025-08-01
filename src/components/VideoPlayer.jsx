@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import PoseOverlay from './PoseOverlay.jsx';
+import { usePoseDetection } from '../hooks/usePoseDetection.js';
 import './VideoPlayer.css';
 
 function VideoPlayer({ videoUrl, onTimeUpdate, onVideoEnd }) {
@@ -7,8 +9,18 @@ function VideoPlayer({ videoUrl, onTimeUpdate, onVideoEnd }) {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [showControls, setShowControls] = useState(true);
+  const [poseDetectionEnabled, setPoseDetectionEnabled] = useState(false);
   const videoRef = useRef(null);
   const controlsTimeoutRef = useRef(null);
+  const canvasRef = useRef(null);
+
+  const {
+    startPoseDetection,
+    stopPoseDetection,
+    isDetecting,
+    detectionStats,
+    hasPoseData
+  } = usePoseDetection();
 
   useEffect(() => {
     const video = videoRef.current;
@@ -98,18 +110,55 @@ function VideoPlayer({ videoUrl, onTimeUpdate, onVideoEnd }) {
     }
   };
 
+  const togglePoseDetection = async () => {
+    console.log('Toggle pose detection clicked');
+    console.log('Current state:', { poseDetectionEnabled, isDetecting });
+    
+    if (!poseDetectionEnabled) {
+      console.log('Starting pose detection...');
+      // Start pose detection
+      const success = await startPoseDetection(videoRef.current, canvasRef.current);
+      console.log('Pose detection start result:', success);
+      if (success) {
+        setPoseDetectionEnabled(true);
+      }
+    } else {
+      console.log('Stopping pose detection...');
+      // Stop pose detection
+      stopPoseDetection();
+      setPoseDetectionEnabled(false);
+    }
+  };
+
+  const handleCanvasReady = (canvas) => {
+    console.log('Canvas ready:', canvas);
+    canvasRef.current = canvas;
+  };
+
+  useEffect(() => {
+    console.log('Pose detection state changed:', { poseDetectionEnabled, isDetecting });
+  }, [poseDetectionEnabled, isDetecting]);
+
   return (
     <div 
       className="video-player-container"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <video
-        ref={videoRef}
-        src={videoUrl}
-        className="video-element"
-        onClick={togglePlay}
-      />
+      <div className="video-wrapper">
+        <video
+          ref={videoRef}
+          src={videoUrl}
+          className="video-element"
+          onClick={togglePlay}
+        />
+        
+        <PoseOverlay 
+          videoElement={videoRef.current}
+          isActive={poseDetectionEnabled && isDetecting}
+          onCanvasReady={handleCanvasReady}
+        />
+      </div>
       
       <div className={`video-controls ${showControls ? 'visible' : ''}`}>
         <div className="controls-top">
@@ -138,6 +187,14 @@ function VideoPlayer({ videoUrl, onTimeUpdate, onVideoEnd }) {
           </div>
           
           <div className="controls-right">
+            <button
+              className={`control-button pose-button ${poseDetectionEnabled ? 'active' : ''}`}
+              onClick={togglePoseDetection}
+              title="Toggle Pose Detection"
+            >
+              🎯
+            </button>
+            
             <div className="volume-control">
               <span className="volume-icon">🔊</span>
               <input
