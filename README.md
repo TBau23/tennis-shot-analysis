@@ -1,6 +1,6 @@
 # Tennis Shot Classifier
 
-A React app that allows users to upload videos of themselves playing tennis. The app uses TensorFlow MoveNet to overlay joint positioning and classify the movement as backhand, forehand, or serve.
+A React app that allows users to upload videos of themselves playing tennis. The app uses TensorFlow MoveNet to overlay joint positioning and classify the movement as backhand, forehand, or serve. More features in the works.
 
 ## Features
 - Video upload and playback

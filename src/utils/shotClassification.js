@@ -103,8 +103,6 @@ function normalizeCoordinates(features) {
 function detectHandedness(poseData) {
   console.log('Analyzing handedness...');
 
-  console.log('poseData!!!!!!', poseData);
-
   if (poseData.length < 3) return { racketHand: 'right', confidence: 0.5 };
   
   let rightHandScore = 0;
